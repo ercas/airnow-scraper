@@ -99,7 +99,7 @@ class AirNowCgiError(Exception):
     pass
 
 # derived from https://stackoverflow.com/a/16696317
-def download_file(url: str, output_file: str, use_gzip: bool = False):
+def download_file(url: str, output_file: str, use_gzip: bool = False) -> bool:
     with requests.get(url, stream = True) as response:
         response.raise_for_status()
         if (use_gzip):
@@ -116,6 +116,7 @@ def download_file(url: str, output_file: str, use_gzip: bool = False):
 # scraper and avoiding recalculation of the EPA site identifier; not intended
 # to be used directly
 class AqsSite(object):
+
     def __init__(self, site_data: dict):
         # from https://www.epa.gov/outdoor-air-quality-data/about-air-data-reports:
         # The AQS database identification code for an air monitoring site. An
@@ -163,15 +164,17 @@ class Scraper(object):
             os.makedirs(output_directory)
         print("saving output to {}".format(output_directory))
 
-    def print(self, *args, **kwargs):
+    def print(self, *args, **kwargs) -> None:
         if (self.verbose):
             print(datetime.datetime.now().isoformat(), *args, **kwargs)
+        return
 
-    def sleep(self):
+    def sleep(self) -> None:
         # TODO: put this variable in a better place
         sleep_time = 5
         self.print("> sleeping {} seconds".format(sleep_time))
         time.sleep(sleep_time)
+        return
 
     # given a start date, end date, and pollutant, return all EPA monitors that
     # were collecting data for the given pollutant during the given time frame
@@ -179,7 +182,7 @@ class Scraper(object):
                      pollutant: str,
                      state: int,
                      start_date: datetime.datetime,
-                     end_date: datetime.datetime):
+                     end_date: datetime.datetime) -> typing.List[AqsSite]:
         if (not pollutant in POLLUTANTS):
             print("invalid pollutant {}; available pollutants: {}".format(
                 pollutant, ", ".join(POLLUTANTS.keys())
@@ -217,7 +220,7 @@ class Scraper(object):
     def get_data_url(self,
                  pollutant: str,
                  year: int,
-                 site: AqsSite):
+                 site: AqsSite) -> str:
 
         request = requests.get(
             "https://www3.epa.gov/cgi-bin/broker",
@@ -244,7 +247,7 @@ class Scraper(object):
                  pollutant: str,
                  year: int,
                  site: AqsSite,
-                 output_file: str = None):
+                 output_file: str = None) -> None:
         if (not output_file):
             output_file = os.path.join(
                 self.output_directory,
@@ -280,7 +283,7 @@ class Scraper(object):
                pollutant: str,
                states: typing.List[str],
                start_date: datetime.datetime,
-               end_date: datetime.datetime):
+               end_date: datetime.datetime) -> None:
         # TODO: may be better to separate site scraping and data scraping into
         # two distinct stages
         for state in states:

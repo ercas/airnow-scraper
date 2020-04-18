@@ -5,13 +5,14 @@ import glob
 import json
 import os
 import pandas
+import typing
 
-def read_json(path):
+def read_json(path: str) -> dict:
     with open(path, "r") as f:
         data = json.load(f)
     return data
 
-def join_data(root, output_directory = "."):
+def join_data(root: str, output_directory: str = ".") -> None:
     data_output = os.path.join(output_directory, "data.csv")
     sites_output = os.path.join(output_directory, "sites.csv")
 
