@@ -180,13 +180,14 @@ class Scraper(object):
     # were collecting data for the given pollutant during the given time frame
     def list_monitoring_sites(self,
                      pollutant: str,
-                     state: int,
+                     state: str,
                      start_date: datetime.datetime,
                      end_date: datetime.datetime) -> typing.List[AqsSite]:
         if (not pollutant in POLLUTANTS):
             print("invalid pollutant {}; available pollutants: {}".format(
                 pollutant, ", ".join(POLLUTANTS.keys())
             ))
+            return []
         else:
             response = requests.get(
                 "https://aqs.epa.gov/data/api/monitors/byState",
@@ -199,6 +200,7 @@ class Scraper(object):
                     "state": state
                 }
             )
+            self.sleep()
             data = response.json()
             if (data["Header"][0]["status"] == "Failed"):
                 print(data["Header"])
@@ -212,8 +214,6 @@ class Scraper(object):
                 ))
                 return [AqsSite(site) for site in result]
 
-        self.sleep()
-
     # given a pollutant, a year, and a dict from aqs_list_monitors describing
     # an EPA site, return the url pointing to a csv with the requested
     # pollutant data
@@ -222,16 +222,14 @@ class Scraper(object):
                  year: int,
                  site: AqsSite) -> str:
 
-        request = requests.get(
-            "https://www3.epa.gov/cgi-bin/broker",
-            params = {
-                "_service": "data",
-                "_program": "dataprog.ad_data_daily_airnow.sas",
-                "poll": POLLUTANTS[pollutant],
-                "year": year,
-                "site": site.site_id
-            }
-        )
+        params: typing.Dict[str, typing.Union[int, str]] = {
+            "_service": "data",
+            "_program": "dataprog.ad_data_daily_airnow.sas",
+            "poll": POLLUTANTS[pollutant],
+            "year": year,
+            "site": site.site_id
+        }
+        request = requests.get("https://www3.epa.gov/cgi-bin/broker", params)
         self.sleep()
         soup = bs4.BeautifulSoup(request.content, "lxml")
 
