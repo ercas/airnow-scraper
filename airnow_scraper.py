@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-#pylint: disable=too-few-public-methods
-#pylint: disable=too-many-arguments
+# pylint: disable=too-few-public-methods
+# pylint: disable=too-many-arguments
 
 """ Scrape data from EPA AirNow web interface.
 
@@ -43,53 +43,16 @@ POLLUTANTS = {
 
 STATE_FIPS_CODES = {
     "AL": "01", "AK": "02", "AZ": "04", "AR": "05", "CA": "06", "CO": "08",
-    "CT": "09",
-    "DE": "10",
-    "DC": "11",
-    "FL": "12",
-    "GA": "13",
-    "HI": "15",
-    "ID": "16",
-    "IL": "17",
-    "IN": "18",
-    "IA": "19",
-    "KS": "20",
-    "KY": "21",
-    "LA": "22",
-    "ME": "23",
-    "MD": "24",
-    "MA": "25",
-    "MI": "26",
-    "MN": "27",
-    "MS": "28",
-    "MO": "29",
-    "MT": "30",
-    "NE": "31",
-    "NV": "32",
-    "NH": "33",
-    "NJ": "34",
-    "NM": "35",
-    "NY": "36",
-    "NC": "37",
-    "ND": "38",
-    "OH": "39",
-    "OK": "40",
-    "OR": "41",
-    "PA": "42",
-    "RI": "44",
-    "SC": "45",
-    "SD": "46",
-    "TN": "47",
-    "TX": "48",
-    "UT": "49",
-    "VT": "50",
-    "VA": "51",
-    "WA": "53",
-    "WV": "54",
-    "WI": "55",
-    "WY": "56"
+    "CT": "09", "DE": "10", "DC": "11", "FL": "12", "GA": "13", "HI": "15",
+    "ID": "16", "IL": "17", "IN": "18", "IA": "19", "KS": "20", "KY": "21",
+    "LA": "22", "ME": "23", "MD": "24", "MA": "25", "MI": "26", "MN": "27",
+    "MS": "28", "MO": "29", "MT": "30", "NE": "31", "NV": "32", "NH": "33",
+    "NJ": "34", "NM": "35", "NY": "36", "NC": "37", "ND": "38", "OH": "39",
+    "OK": "40", "OR": "41", "PA": "42", "RI": "44", "SC": "45", "SD": "46",
+    "TN": "47", "TX": "48", "UT": "49", "VT": "50", "VA": "51", "WA": "53",
+    "WV": "54", "WI": "55", "WY": "56"
 }
-STATE_FIPS_CODES_REVERSED = { # not really a constant but it basically is
+STATE_FIPS_CODES_REVERSED = {  # not really a constant but it basically is
     value: key
     for (key, value) in STATE_FIPS_CODES.items()
 }
@@ -103,11 +66,14 @@ DOWNLOAD_CHUNK_SIZE = 8192
 
 DEFAULT_SLEEP_BETWEEN_REQUESTS = 5
 
+
 class AqsApiError(Exception):
     """ An exception indicating EPA AQS API errors """
 
+
 class AirNowCgiError(Exception):
     """ An exception indicating an error in the EPA AirNow SAS script """
+
 
 # derived from https://stackoverflow.com/a/16696317
 def download_file(url: str, output_file: str, use_gzip: bool = False) -> None:
@@ -132,7 +98,8 @@ def download_file(url: str, output_file: str, use_gzip: bool = False) -> None:
                 output_fp.write(chunk)
         output_fp.close()
 
-class AqsSite():
+
+class AqsSite:
     """ Class to ecnapsulate AQS API site data.
 
     Class to encapsulate AQS API site data to enable type checking for the
@@ -179,7 +146,8 @@ class AqsSite():
             ]
         ))
 
-class Scraper():
+
+class Scraper:
     """ Main AirNow scraper class.
 
     Attributes:
@@ -214,7 +182,7 @@ class Scraper():
         self.verbose = verbose
         self.use_compression = use_compression
 
-        if ((email == AQS_DEFAULT_EMAIL) or (key == AQS_DEFAULT_KEY)):
+        if (email == AQS_DEFAULT_EMAIL) or (key == AQS_DEFAULT_KEY):
             print("warning: using default AQS credentials")
 
         if not os.path.isdir(output_directory):
@@ -233,7 +201,6 @@ class Scraper():
             sleep_time: The number of seconds to sleep for.
         """
 
-        sleep_time = 5
         self.print("> sleeping {} seconds".format(sleep_time))
         time.sleep(sleep_time)
 
@@ -255,7 +222,7 @@ class Scraper():
             monitoring site.
         """
 
-        if not pollutant in POLLUTANTS:
+        if pollutant not in POLLUTANTS:
             print("invalid pollutant {}; available pollutants: {}".format(
                 pollutant, ", ".join(POLLUTANTS.keys())
             ))
@@ -313,7 +280,7 @@ class Scraper():
         self.sleep()
         soup = bs4.BeautifulSoup(request.content, "lxml")
 
-        if not "The following data link is active" in soup.body.text:
+        if "The following data link is active" not in soup.body.text:
             raise AirNowCgiError("incorrect parameters or EPA AirNow SAS script was updated")
 
         return soup.find("a")["href"]
@@ -410,6 +377,7 @@ class Scraper():
 
         self.print("finished")
 
+
 def main() -> None:
     """ Main scraper functionality. """
 
@@ -456,7 +424,7 @@ def main() -> None:
         help="toggle verbose output"
     )
 
-    #args = parser.parse_args("-p PM2.5 -s 2020-01-01 -e today -v".split())
+    # args = parser.parse_args("-p PM2.5 -s 2020-01-01 -e today -v".split())
     args = parser.parse_args()
 
     # check: selected a valid pollutant
@@ -512,7 +480,9 @@ def main() -> None:
         for name in ["pollutant", "start_date", "end_date", "states"]
     })
 
+
 if __name__ == "__main__":
     import argparse
     import dateutil.parser
+
     main()
